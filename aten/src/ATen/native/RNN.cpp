@@ -399,6 +399,7 @@ struct LSTMCell : Cell<std::tuple<Tensor, Tensor>, cell_params> {
     const auto& hx = std::get<0>(hidden);
     const auto& cx = std::get<1>(hidden);
 
+/* Should be commented out otherwise double gradient doesn't work
     if (input.is_cuda()) {
       TORCH_CHECK(!pre_compute_input);
       auto igates = params.matmul_ih(input);
@@ -408,7 +409,7 @@ struct LSTMCell : Cell<std::tuple<Tensor, Tensor>, cell_params> {
       // Slice off the workspace argument (it's needed only for AD).
       return std::make_tuple(std::move(std::get<0>(result)), std::move(std::get<1>(result)));
     }
-
+*/
     const auto gates = params.linear_hh(hx).add_(
         pre_compute_input ? input : params.linear_ih(input));
     auto chunked_gates = gates.chunk(4, 1);
@@ -432,7 +433,8 @@ struct GRUCell : Cell<Tensor, cell_params> {
       const hidden_type& hidden,
       const cell_params& params,
       bool pre_compute_input = false) const override {
-    if (input.is_cuda()) {
+/*Should be commented out otherwise double gradient doesn't work
+ if (input.is_cuda()) {
       TORCH_CHECK(!pre_compute_input);
       auto igates = params.matmul_ih(input);
       auto hgates = params.matmul_hh(hidden);
@@ -441,6 +443,7 @@ struct GRUCell : Cell<Tensor, cell_params> {
       // Slice off the workspace argument (it's needed only for AD).
       return std::move(std::get<0>(result));
     }
+    */
     const auto chunked_igates = pre_compute_input
         ? input.chunk(3, 1)
         : params.linear_ih(input).chunk(3, 1);
